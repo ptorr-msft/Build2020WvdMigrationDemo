@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Packaging;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -47,6 +48,7 @@ namespace WvdMigration
                 Application.Current.Shutdown();
             }
 
+            appVersionText.Text = $"App type: {(App.IsPackaged ? $"MSIX package ({Windows.ApplicationModel.Package.Current.Id.FullName})" : $"ClickOnce app")}";
             registryKeyNameText.Text = $"Registry key: HKCU\\{registryKeyName}";
             logFileLocationText.Text = $"Log directory: {logDirectory}";
             dataFileLocationText.Text = $"Save directory: {dataFileDirectory}";
@@ -65,12 +67,6 @@ namespace WvdMigration
 
         void SetupDirectories()
         {
-            // BEFORE
-            // ------
-            // logDirectory = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
-
-            // AFTER
-            // -----
             if (App.IsPackaged)
             {
                 logDirectory = Path.Combine(ApplicationData.Current.LocalFolder.Path);
@@ -80,15 +76,7 @@ namespace WvdMigration
                 logDirectory = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
             }
 
-            // BEFORE
-            // ------
-            // dataFileDirectory = Environment.ExpandEnvironmentVariables(@"%ProgramData%\Fabrikam");
-
-            // AFTER
-            // -----
             dataFileDirectory = Environment.ExpandEnvironmentVariables(@"%AppData%\Fabrikam");
-
-
             if (!Directory.Exists(dataFileDirectory))
             {
                 Directory.CreateDirectory(dataFileDirectory);
