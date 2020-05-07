@@ -19,7 +19,7 @@ steps:
 
 - task: MSBuild@1
   inputs:
-    solution: '**/MsixPackage.wapproj'
+    solution: '**/*.sln'
     platform: $(buildPlatform)
     configuration: $(buildConfiguration)
     msbuildArguments: '/restore /p:UapAppxPackageBuildMode=$(MsixBuildMode) /p:AppxPackageOutput=$(Build.ArtifactStagingDirectory)/WvdMigration.msix'
