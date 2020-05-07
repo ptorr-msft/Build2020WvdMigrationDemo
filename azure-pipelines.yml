@@ -8,14 +8,17 @@ variables:
   minor: 0
   build: 1
   revision: 0
-
+  msixProjectPath: "./src/WvdMigration/MsixPackage"
+  publishedPackageName: "WvdMigration.$(major).$(minor).$(build).$(revision).msix"
+  pfxName: "MsixPackage_TemporaryKey.pfx"
+  
 steps:
 
 - powershell: |
      # Update appxmanifest. This must be done before the build.
-     [xml]$manifest = get-content "./src/WvdMigration/MsixPackage/Package.appxmanifest"
+     [xml]$manifest = get-content "$(msixProjectPath)/Package.appxmanifest"
      $manifest.Package.Identity.Version = "$(major).$(minor).$(build).$(revision)"
-     $manifest.save(".\HeadTraxPackage\Package.appxmanifest")
+     $manifest.save("$(msixProjectPath)/Package.appxmanifest")
   displayName: 'Update manifest version'
 
 - task: MSBuild@1
@@ -23,18 +26,18 @@ steps:
     solution: '**/*.sln'
     platform: $(buildPlatform)
     configuration: $(buildConfiguration)
-    msbuildArguments: '/restore /p:UapAppxPackageBuildMode=$(MsixBuildMode) /p:AppxPackageOutput=$(Build.ArtifactStagingDirectory)/WvdMigration.$(major).$(minor).$(build).$(revision).msix'
+    msbuildArguments: '/restore /p:UapAppxPackageBuildMode=$(MsixBuildMode) /p:AppxPackageOutput=$(Build.ArtifactStagingDirectory)/$(publishedPackageName)'
     maximumCpuCount: false
   displayName: 'Build solution'
 
 - task: DownloadSecureFile@1
 #  name : cert
   inputs:
-    secureFile: 'MsixPackage_TemporaryKey.pfx'
+    secureFile: "$(pfxName)"
   displayName: 'Download PFX from secure storage'
   
 - script: '"C:\Program Files (x86)\Windows Kits\10\bin\10.0.17763.0\x86\signtool"
-    sign /fd SHA256 /f $(Agent.TempDirectory)/MsixPackage_TemporaryKey.pfx $(Build.ArtifactStagingDirectory)/WvdMigration.$(major).$(minor).$(build).$(revision).msix'
+    sign /fd SHA256 /f $(Agent.TempDirectory)/$(pfxName) $(Build.ArtifactStagingDirectory)/$(publishedPackageName)'
   displayName: 'Sign MSIX Package'
 
 - task: CopyFiles@2
