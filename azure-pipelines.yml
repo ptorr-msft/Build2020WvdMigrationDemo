@@ -6,34 +6,35 @@ variables:
   buildConfiguration: 'Release'
   major: 1
   minor: 0
-  build: 0
+  build: 1
+  revision: 0
 
 steps:
 
-#- powershell: |
-#     # Update appxmanifest. This must be done before the build.
-#     [xml]$manifest= get-content ".\HeadTraxPackage\Package.appxmanifest"
-#     $manifest.Package.Identity.Version = "$(major).$(minor).$(build).$(revision)"
-#     $manifest.save(".\HeadTraxPackage\Package.appxmanifest")
-#  displayName: 'Version Package Manifest'
+- powershell: |
+     # Update appxmanifest. This must be done before the build.
+     [xml]$manifest = get-content "./src/WvdMigration/MsixPackage/Package.appxmanifest"
+     $manifest.Package.Identity.Version = "$(major).$(minor).$(build).$(revision)"
+     $manifest.save(".\HeadTraxPackage\Package.appxmanifest")
+  displayName: 'Update manifest version'
 
 - task: MSBuild@1
   inputs:
     solution: '**/*.sln'
     platform: $(buildPlatform)
     configuration: $(buildConfiguration)
-    msbuildArguments: '/restore /p:UapAppxPackageBuildMode=$(MsixBuildMode) /p:AppxPackageOutput=$(Build.ArtifactStagingDirectory)/WvdMigration.msix'
+    msbuildArguments: '/restore /p:UapAppxPackageBuildMode=$(MsixBuildMode) /p:AppxPackageOutput=$(Build.ArtifactStagingDirectory)/WvdMigration.$(major).$(minor).$(build).$(revision).msix'
     maximumCpuCount: false
-  displayName: 'Package the App'
+  displayName: 'Build solution'
 
 - task: DownloadSecureFile@1
-  name : cert
+#  name : cert
   inputs:
     secureFile: 'MsixPackage_TemporaryKey.pfx'
-  displayName: 'Download Secure PFX File'
+  displayName: 'Download PFX from secure storage'
   
 - script: '"C:\Program Files (x86)\Windows Kits\10\bin\10.0.17763.0\x86\signtool"
-    sign /fd SHA256 /f $(Agent.TempDirectory)/MsixPackage_TemporaryKey.pfx $(Build.ArtifactStagingDirectory)/WvdMigration.msix'
+    sign /fd SHA256 /f $(Agent.TempDirectory)/MsixPackage_TemporaryKey.pfx $(Build.ArtifactStagingDirectory)/WvdMigration.$(major).$(minor).$(build).$(revision).msix'
   displayName: 'Sign MSIX Package'
 
 - task: CopyFiles@2
