@@ -1,0 +1,33 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30021.99
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WvdMigration", "WvdMigration\WvdMigration.csproj", "{A5CD9CE7-D2BE-4D39-B91A-854EBABFBB3A}"
+EndProject
+Project("{C7167F0D-BC9F-4E6E-AFE1-012C56B48DB5}") = "MsixPackage", "MsixPackage\MsixPackage.wapproj", "{5A80F54B-0C98-4AED-A9F2-6FFC006D40C4}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A5CD9CE7-D2BE-4D39-B91A-854EBABFBB3A}.Debug|x86.ActiveCfg = Debug|x86
+		{A5CD9CE7-D2BE-4D39-B91A-854EBABFBB3A}.Debug|x86.Build.0 = Debug|x86
+		{A5CD9CE7-D2BE-4D39-B91A-854EBABFBB3A}.Release|x86.ActiveCfg = Release|x86
+		{A5CD9CE7-D2BE-4D39-B91A-854EBABFBB3A}.Release|x86.Build.0 = Release|x86
+		{5A80F54B-0C98-4AED-A9F2-6FFC006D40C4}.Debug|x86.ActiveCfg = Debug|x86
+		{5A80F54B-0C98-4AED-A9F2-6FFC006D40C4}.Debug|x86.Build.0 = Debug|x86
+		{5A80F54B-0C98-4AED-A9F2-6FFC006D40C4}.Debug|x86.Deploy.0 = Debug|x86
+		{5A80F54B-0C98-4AED-A9F2-6FFC006D40C4}.Release|x86.ActiveCfg = Release|x86
+		{5A80F54B-0C98-4AED-A9F2-6FFC006D40C4}.Release|x86.Build.0 = Release|x86
+		{5A80F54B-0C98-4AED-A9F2-6FFC006D40C4}.Release|x86.Deploy.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B28311C8-551D-4DE3-9744-E1F732E76A3C}
+	EndGlobalSection
+EndGlobal
