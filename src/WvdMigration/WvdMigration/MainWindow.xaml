@@ -22,14 +22,14 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="4" Text="What's your favorite installation technology?" FontWeight="Bold" Margin="0,10"/>
-        <RadioButton Content="Setup.exe" Grid.Row="1" Grid.Column="0" VerticalContentAlignment="Center" x:Name="setupButton" />
-        <RadioButton Content="ClickOnce" Grid.Row="1" Grid.Column="1" VerticalContentAlignment="Center" x:Name="clickOnceButton" />
-        <RadioButton Content="MSI" Grid.Row="1" Grid.Column="2" VerticalContentAlignment="Center" x:Name="msiButton" />
-        <RadioButton Content="MSIX" Grid.Row="1" Grid.Column="3" VerticalContentAlignment="Center" x:Name="msixButton" />
+        <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="4" Text="What's the best technology for WVD?" FontWeight="Bold" Margin="0,10"/>
+        <RadioButton Content="Setup.exe" Grid.Row="1" Grid.Column="0" VerticalContentAlignment="Center" x:Name="setupButton" IsEnabled="False" />
+        <RadioButton Content="ClickOnce" Grid.Row="1" Grid.Column="1" VerticalContentAlignment="Center" x:Name="clickOnceButton" IsEnabled="False" />
+        <RadioButton Content="MSI" Grid.Row="1" Grid.Column="2" VerticalContentAlignment="Center" x:Name="msiButton" IsEnabled="False" />
+        <RadioButton Content="MSIX" Grid.Row="1" Grid.Column="3" VerticalContentAlignment="Center" x:Name="msixButton" IsChecked="True"/>
 
         <TextBlock Text="Please explain your answer:" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="4" FontWeight="Bold" Margin="0,10"/>
-        <TextBox AcceptsReturn="True" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="4" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" x:Name="explainTextbox"/>
+        <TextBox AcceptsReturn="True" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="4" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" x:Name="explainTextbox" Text="Simple Visual Studio project.&#xD;&#xA;Simple, clean install / update / rollback / uninstall.&#xD;&#xA;Instant app availability with MSIX AppAttach." IsReadOnly="True"/>
 
         <Button Content="Save" Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="4" HorizontalAlignment="Center" Margin="0,10" Padding="20,5" Click="DoSave"/>
         <StackPanel Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="4" HorizontalAlignment="Stretch">

@@ -47,7 +47,7 @@ namespace WvdMigration
                 Application.Current.Shutdown();
             }
 
-            appVersionText.Text = $"App type: {(App.IsPackaged ? $"MSIX package ({Windows.ApplicationModel.Package.Current.Id.FullName})" : $"ClickOnce app")}";
+            appVersionText.Text = $"App type: {App.AppVersionInfo}";
             registryKeyNameText.Text = $"Registry key: HKCU\\{registryKeyName}";
             logFileLocationText.Text = $"Log directory: {logDirectory}";
             dataFileLocationText.Text = $"Save directory: {dataFileDirectory}";
@@ -99,6 +99,9 @@ namespace WvdMigration
             key = Registry.CurrentUser.CreateSubKey(registryKeyName, true);
             var favoriteTech = key.GetValue(registryValueName, "") as string;
 
+            // Ignore registry value; we know MSIX is the best.
+            return;
+
             foreach ((var name, var button) in setupTechButtons)
             {
                 if (favoriteTech == name)
@@ -112,6 +115,10 @@ namespace WvdMigration
         void LoadData()
         {
             userFilePath = Path.Combine(dataFileDirectory, "explain.txt");
+
+            // Ignore what was written before; we know why MSIX is the best.
+            return;
+
             if (File.Exists(userFilePath))
             {
                 using (var reader = File.OpenText(userFilePath))
