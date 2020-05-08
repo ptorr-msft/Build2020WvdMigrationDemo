@@ -9,11 +9,11 @@
   <Identity
     Name="Fabrikam.WvdMigrationApp"
     Publisher="CN=Fabrikam Inc. - FOR TEST PURPOSES ONLY"
-    Version="1.0.5.0" />
+    Version="1.1.0.0" />
 
   <Properties>
-    <DisplayName>WVD Migration Sample</DisplayName>
-    <PublisherDisplayName>Fabrikam Inc.</PublisherDisplayName>
+    <DisplayName>Fabrikam WVD Migration Sample</DisplayName>
+    <PublisherDisplayName>Fabrikam Inc. (TEST ONLY)</PublisherDisplayName>
     <Logo>Images\StoreLogo.png</Logo>
   </Properties>
 

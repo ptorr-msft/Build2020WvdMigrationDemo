@@ -47,7 +47,7 @@ namespace WvdMigration
                 Application.Current.Shutdown();
             }
 
-            appVersionText.Text = $"App type: {(App.IsPackaged ? $"MSIX package ({Windows.ApplicationModel.Package.Current.Id.FullName})" : $"ClickOnce app")}";
+            appVersionText.Text = $"App type: {App.AppVersionInfo}";
             registryKeyNameText.Text = $"Registry key: HKCU\\{registryKeyName}";
             logFileLocationText.Text = $"Log directory: {logDirectory}";
             dataFileLocationText.Text = $"Save directory: {dataFileDirectory}";
@@ -91,7 +91,15 @@ namespace WvdMigration
         {
             var fullLogPath = Path.Combine(logDirectory, "activity.log");
             logfile = new StreamWriter(fullLogPath);
-            logfile.WriteLine($"App started at {DateTime.Now.ToUniversalTime()}");
+            WriteLog("App launched");
+        }
+
+        void WriteLog(string message)
+        {
+            if (logfile != null)
+            {
+                logfile.WriteLine($"{message} at {DateTime.Now.ToUniversalTime()}");
+            }
         }
 
         void LoadSettings()
@@ -126,7 +134,7 @@ namespace WvdMigration
             SaveSettings();
             SaveData();
 
-            logfile.WriteLine($"Saved data at {DateTime.Now.ToUniversalTime()}");
+            WriteLog("Registry and file saved");
         }
 
         void SaveSettings()
@@ -143,8 +151,13 @@ namespace WvdMigration
 
         void SaveData()
         {
-            File.Delete(userFilePath);
-            using (var writer = new StreamWriter(File.OpenWrite(userFilePath)))
+            SaveData(userFilePath);
+        }
+
+        void SaveData(string filename)
+        {
+            File.Delete(filename);
+            using (var writer = new StreamWriter(File.OpenWrite(filename)))
             {
                 writer.Write(explainTextbox.Text);
             }
@@ -154,7 +167,7 @@ namespace WvdMigration
         {
             if (logfile != null)
             {
-                logfile.WriteLine($"App closing at {DateTime.Now.ToUniversalTime()}");
+                WriteLog("App closed");
                 logfile.Dispose();
             }
         }
@@ -172,6 +185,23 @@ namespace WvdMigration
         private void CopyRegistryKeyName(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             Clipboard.SetText("HKCU\\" + registryKeyName);
+        }
+
+        private void DoSaveCopy(object sender, RoutedEventArgs e)
+        {
+            var dialog = new SaveFileDialog
+            {
+                Filter = "Text files|*.txt",
+                FileName = "explain.txt",
+                InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop)
+            };
+
+            var result = dialog.ShowDialog();
+            if (result.GetValueOrDefault())
+            {
+                WriteLog($"File exported to {dialog.FileName}");
+                SaveData(dialog.FileName);
+            }
         }
     }
 }
