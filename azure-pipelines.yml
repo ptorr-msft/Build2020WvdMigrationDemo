@@ -13,8 +13,24 @@ variables:
   publishedVHDName: "WvdMigration.$(GitBuildVersionSimple).0.vhd"
   pfxName: "MsixPackage_TemporaryKey.pfx"
   vhd-size-mb: "10MB"
+
   
 steps:
+
+- task: UseDotNet@2
+  displayName: 'Use .NET Core SDK 3.0.x'
+  inputs:
+    version: 3.0.x
+
+- task: DotNetCoreCLI@2
+  inputs:
+      command: custom
+      custom: tool
+      arguments: install --tool-path . nbgv
+  displayName: Install NBGV tool
+
+- script: nbgv cloud -c -a
+  displayName: ngbv Set Version
 
 - powershell: |
      # Update appxmanifest. This must be done before the build.
