@@ -3,18 +3,14 @@ pool:
 
 variables:
   buildPlatform: 'x86'
-  buildConfiguration: 'Release'
-  major: 1
-  minor: 0
-  build: 1
-  revision: 0
+  BuildConfiguration: Release
   msixProjectPath: "./src/WvdMigration/MsixPackage"
   publishedPackageName: "WvdMigration.$(GitBuildVersionSimple).0.msix"
   publishedVHDName: "WvdMigration.$(GitBuildVersionSimple).0.vhd"
   pfxName: "MsixPackage_TemporaryKey.pfx"
   vhd-size-mb: "10"
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
-  BuildConfiguration: Release
+  
   
 steps:
 - task: UseDotNet@2
