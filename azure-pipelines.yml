@@ -13,6 +13,7 @@ variables:
   publishedVHDName: "WvdMigration.$(GitBuildVersionSimple).0.vhd"
   pfxName: "MsixPackage_TemporaryKey.pfx"
   vhd-size-mb: "10MB"
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
 
   
 steps:
@@ -59,7 +60,7 @@ steps:
   displayName: 'Sign MSIX Package'
   condition: succeeded()
 
-- script: copy $(Build.ArtifactStagingDirectory)/$(publishedPackageName) .\msixmgr\x64\$(publishedPackageName)
+- script: copy $(Build.ArtifactStagingDirectory)\$(publishedPackageName) .\msixmgr\x64\$(publishedPackageName)
   displayName: 'Setup msixmgr files'
   condition: succeeded()
 
