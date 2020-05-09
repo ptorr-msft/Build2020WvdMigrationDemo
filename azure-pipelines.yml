@@ -79,11 +79,9 @@ steps:
      $partition = New-Partition -AssignDriveLetter -UseMaximumSize -DiskNumber $disk.Number
      Format-Volume -FileSystem NTFS -Confirm:$false -DriveLetter $partition.DriveLetter -Force
      $vhdRoot = $partition.DriveLetter + ':\VHDRoot'
-     New-Item -Path $dirPath -ItemType Directory
+     New-Item -Path $vhdRoot -ItemType Directory
 
      $packagePath = ".\msixmgr\x64\$(publishedPackageName)"
-     Write-Host $packagePath
-     Write-Host $dirPath
      .\msixmgr\x64\msixmgr.exe -Unpack -packagePath $packagePath -destination $vhdRoot -applyacls
      Dismount-DiskImage c:\temp\$(publishedVHDName)
   displayName: Expanded MSIX into VHD
