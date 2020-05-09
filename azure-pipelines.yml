@@ -9,15 +9,17 @@ variables:
   build: 1
   revision: 0
   msixProjectPath: "./src/WvdMigration/MsixPackage"
-  publishedPackageName: "WvdMigration.$(major).$(minor).$(build).$(revision).msix"
+  publishedPackageName: "WvdMigration.$(GitBuildVersionSimple).0.msix"
+  publishedVHDName: "WvdMigration.$(GitBuildVersionSimple).0.vhd"
   pfxName: "MsixPackage_TemporaryKey.pfx"
+  vhd-size-mb: "10MB"
   
 steps:
 
 - powershell: |
      # Update appxmanifest. This must be done before the build.
      [xml]$manifest = get-content "$(msixProjectPath)/Package.appxmanifest"
-     $manifest.Package.Identity.Version = "$(major).$(minor).$(build).$(revision)"
+     $manifest.Package.Identity.Version = "$(GitBuildVersionSimple).0"
      $manifest.save("$(msixProjectPath)/Package.appxmanifest")
   displayName: 'Update manifest version'
 
@@ -39,6 +41,39 @@ steps:
 - script: '"C:\Program Files (x86)\Windows Kits\10\bin\10.0.17763.0\x86\signtool"
     sign /fd SHA256 /f $(Agent.TempDirectory)/$(pfxName) $(Build.ArtifactStagingDirectory)/$(publishedPackageName)'
   displayName: 'Sign MSIX Package'
+  condition: succeeded()
+
+- script: copy $(Build.ArtifactStagingDirectory)/$(publishedPackageName) .\msixmgr\x64\$(publishedPackageName)
+  displayName: 'Setup msixmgr files'
+  condition: succeeded()
+
+#Generate MSIX app attach VHD
+- task: CmdLine@2
+  inputs:
+    script: |
+     echo.> c:\temp\command.txt create vdisk file=c:\temp\$(publishedVHDName) maximum=$(vhd-size-mb)
+     diskpart /s c:\temp\command.txt
+  displayName: Create VHD
+
+#Mount VHD, Create root directory & Expand MSIX into VHD
+- powershell: |
+    $vhdObject = Mount-DiskImage c:\temp\$(publishedVHDName) -Passthru
+     $disk = Initialize-Disk -Passthru -Number $vhdObject.Number -PartitionStyle MBR
+     $partition = New-Partition -AssignDriveLetter -UseMaximumSize -DiskNumber $disk.Number
+     Format-Volume -FileSystem NTFS -Confirm:$false -DriveLetter $partition.DriveLetter -Force
+     $vhdRoot = $partition.DriveLetter + ':\VHDRoot'
+     New-Item -Path $dirPath -ItemType Directory
+
+     $packagePath = ".\msixmgr\x64\$(publishedPackageName)"
+     Write-Host $packagePath
+     Write-Host $dirPath
+     .\msixmgr\x64\msixmgr.exe -Unpack -packagePath $packagePath -destination $vhdRoot -applyacls
+     Dismount-DiskImage c:\temp\$(publishedVHDName)
+  displayName: Expanded MSIX into VHD
+
+- script: copy c:\temp\$(publishedVHDName) $(build.artifactstagingdirectory)
+  displayName: Copy VHD to Output dir
+  condition: succeeded()
 
 - task: CopyFiles@2
   displayName: 'Copy Files to: $(build.artifactstagingdirectory)'
