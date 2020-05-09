@@ -13,7 +13,7 @@ variables:
   packageManifestName: "$(msixProjectPath)/Package.appxmanifest"
   publishedPackageName: "WvdMigration.$(GitBuildVersionSimple).0.msix"
   publishedVhdName: "WvdMigration.$(GitBuildVersionSimple).0.vhd"
-  intermediatePackagePath: "./msixmgr/x64/$(publishedPackageName)"
+  intermediatePackagePath: ".\\msixmgr\\x64\\$(publishedPackageName)"
   pfxName: "MsixPackage_TemporaryKey.pfx"
   vhdSize: "10"
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
