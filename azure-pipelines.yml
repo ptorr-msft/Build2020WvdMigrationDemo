@@ -13,7 +13,7 @@ variables:
   packageManifestName: "$(msixProjectPath)/Package.appxmanifest"
   publishedPackageName: "WvdMigration.$(GitBuildVersionSimple).0.msix"
   publishedVhdName: "WvdMigration.$(GitBuildVersionSimple).0.vhd"
-  intermediatePackagePathForMsixMgr: ".\msixmgr\x64\$(publishedPackageName)"
+  intermediatePackagePath: "./msixmgr/x64/$(publishedPackageName)"
   pfxName: "MsixPackage_TemporaryKey.pfx"
   vhdSize: "10"
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
@@ -65,7 +65,7 @@ jobs:
     displayName: 'Sign MSIX Package'
     condition: succeeded()
 
-  - script: copy $(Build.artifactStagingDirectory)\$(publishedPackageName) $(intermediatePackagePathForMsixMgr)
+  - script: copy $(Build.artifactStagingDirectory)\$(publishedPackageName) $(intermediatePackagePath)
     displayName: 'Setup MsixMgr files'
     condition: succeeded()
 
@@ -84,7 +84,7 @@ jobs:
       Format-Volume -FileSystem NTFS -Confirm:$false -DriveLetter $partition.DriveLetter -Force
       $vhdRoot = $partition.DriveLetter + ':\VHDRoot'
       New-Item -Path $vhdRoot -ItemType Directory
-      .\msixmgr\x64\msixmgr.exe -Unpack -packagePath $(intermediatePackagePathForMsixMgr) -destination $vhdRoot -applyacls
+      .\msixmgr\x64\msixmgr.exe -Unpack -packagePath $(intermediatePackagePath) -destination $vhdRoot -applyacls
       Dismount-DiskImage c:\temp\$(publishedVhdName)
 
     displayName: Expanded MSIX into VHD
