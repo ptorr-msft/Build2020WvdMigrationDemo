@@ -8,12 +8,14 @@ pr:
 
 variables:
   buildPlatform: 'x86'
-  BuildConfiguration: Release
+  buildConfiguration: 'Release'
   msixProjectPath: "./src/WvdMigration/MsixPackage"
+  packageManifestName: "$(msixProjectPath)/Package.appxmanifest"
   publishedPackageName: "WvdMigration.$(GitBuildVersionSimple).0.msix"
-  publishedVHDName: "WvdMigration.$(GitBuildVersionSimple).0.vhd"
+  publishedVhdName: "WvdMigration.$(GitBuildVersionSimple).0.vhd"
+  intermediatePackagePathForMsixMgr: ".\msixmgr\x64\$(publishedPackageName)"
   pfxName: "MsixPackage_TemporaryKey.pfx"
-  vhd-size-mb: "10"
+  vhdSize: "10"
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
 
 jobs:
@@ -22,85 +24,83 @@ jobs:
     vmImage: windows-2019  
  
   steps:
-  - task: UseDotNet@2
     displayName: 'Use .NET Core SDK 3.0.x'
+  - task: UseDotNet@2
     inputs:
      version: 3.0.x
      
   - task: DotNetCoreCLI@2
+    displayName: 'Install NBGV tool'
     inputs:
      command: custom
      custom: tool
      arguments: install --tool-path . nbgv
-    displayName: Install NBGV tool
 
   - script: nbgv cloud -c -a
     displayName: ngbv Set Version
 
   - powershell: |
      # Update appxmanifest. This must be done before the build.
-     [xml]$manifest = get-content "$(msixProjectPath)/Package.appxmanifest"
+     [xml]$manifest = get-content "$(packageManifestName)"
      $manifest.Package.Identity.Version = "$(GitBuildVersionSimple).0"
-     $manifest.save("$(msixProjectPath)/Package.appxmanifest")
+     $manifest.save("$(packageManifestName)")
+
     displayName: 'Update manifest version'
 
   - task: MSBuild@1
+    displayName: 'Build solution'
     inputs:
      solution: '**/*.sln'
      platform: $(buildPlatform)
      configuration: $(buildConfiguration)
-     msbuildArguments: '/restore /p:UapAppxPackageBuildMode=$(MsixBuildMode) /p:AppxPackageOutput=$(Build.ArtifactStagingDirectory)/$(publishedPackageName)'
+     msbuildArguments: '/restore /p:UapAppxPackageBuildMode=$(MsixBuildMode) /p:AppxPackageOutput=$(Build.artifactStagingDirectory)/$(publishedPackageName)'
      maximumCpuCount: false
-    displayName: 'Build solution'
 
   - task: DownloadSecureFile@1
-   #  name : cert
+    displayName: 'Download PFX from secure storage'
     inputs:
      secureFile: "$(pfxName)"
-    displayName: 'Download PFX from secure storage'
 
-  - script: '"C:\Program Files (x86)\Windows Kits\10\bin\10.0.17763.0\x86\signtool"
-     sign /fd SHA256 /f $(Agent.TempDirectory)/$(pfxName) $(Build.ArtifactStagingDirectory)/$(publishedPackageName)'
+  - script: '"C:\Program Files (x86)\Windows Kits\10\bin\10.0.17763.0\x86\signtool" sign /fd SHA256 /f $(Agent.TempDirectory)/$(pfxName) $(Build.artifactStagingDirectory)/$(publishedPackageName)'
     displayName: 'Sign MSIX Package'
     condition: succeeded()
 
-  - script: copy $(Build.ArtifactStagingDirectory)\$(publishedPackageName) .\msixmgr\x64\$(publishedPackageName)
-    displayName: 'Setup msixmgr files'
+  - script: copy $(Build.artifactStagingDirectory)\$(publishedPackageName) $(intermediatePackagePathForMsixMgr)
+    displayName: 'Setup MsixMgr files'
     condition: succeeded()
 
   - task: CmdLine@2
+    displayName: 'Create VHD'
     inputs:
      script: |
-      echo.> c:\temp\command.txt create vdisk file=c:\temp\$(publishedVHDName) maximum=$(vhd-size-mb)
+      echo.> c:\temp\command.txt create vdisk file=c:\temp\$(publishedVhdName) maximum=$(vhdSize)
       diskpart /s c:\temp\command.txt
-    displayName: Create VHD
 
      # Mount VHD, Create root directory & Expand MSIX into VHD
   - powershell: |
-      $vhdObject = Mount-DiskImage c:\temp\$(publishedVHDName) -Passthru
+      $vhdObject = Mount-DiskImage c:\temp\$(publishedVhdName) -Passthru
       $disk = Initialize-Disk -Passthru -Number $vhdObject.Number -PartitionStyle MBR
       $partition = New-Partition -AssignDriveLetter -UseMaximumSize -DiskNumber $disk.Number
       Format-Volume -FileSystem NTFS -Confirm:$false -DriveLetter $partition.DriveLetter -Force
       $vhdRoot = $partition.DriveLetter + ':\VHDRoot'
       New-Item -Path $vhdRoot -ItemType Directory
+      .\msixmgr\x64\msixmgr.exe -Unpack -packagePath $(intermediatePackagePathForMsixMgr) -destination $vhdRoot -applyacls
+      Dismount-DiskImage c:\temp\$(publishedVhdName)
 
-      $packagePath = ".\msixmgr\x64\$(publishedPackageName)"
-      .\msixmgr\x64\msixmgr.exe -Unpack -packagePath $packagePath -destination $vhdRoot -applyacls
-      Dismount-DiskImage c:\temp\$(publishedVHDName)
     displayName: Expanded MSIX into VHD
 
-  - script: copy c:\temp\$(publishedVHDName) $(build.artifactstagingdirectory)
-    displayName: Copy VHD to Output dir
+  - script: copy c:\temp\$(publishedVhdName) $(build.artifactStagingDirectory)
+    displayName: 'Copy VHD to Output dir'
     condition: succeeded()
 
   - task: CopyFiles@2
-    displayName: 'Copy Files to: $(build.artifactstagingdirectory)'
+    displayName: 'Copy Files to: $(build.artifactStagingDirectory)'
     inputs:
-     SourceFolder: '$(system.defaultworkingdirectory)'
-     Contents: '**\bin\$(BuildConfiguration)\**'
-     TargetFolder: '$(build.artifactstagingdirectory)'
+     SourceFolder: '$(system.defaultWorkingDirectory)'
+     Contents: '**\bin\$(buildConfiguration)\**'
+     TargetFolder: '$(build.artifactStagingDirectory)'
 
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifact: drop'
     inputs:
-      PathtoPublish: '$(build.artifactstagingdirectory)'
+      PathtoPublish: '$(build.artifactStagingDirectory)'
