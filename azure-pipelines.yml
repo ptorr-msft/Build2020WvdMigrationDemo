@@ -1,8 +1,16 @@
+trigger:
+- master
+- rel/*
+
+pr:
+- master
+- rel/*
+
 variables:
   buildPlatform: 'x86'
   BuildConfiguration: Release
   msixProjectPath: "./src/WvdMigration/MsixPackage"
-  publishedPackageName: "WvdMigration.$(GitBuildVersionSimple).0.msix"
+  publishedPackageName: "WvdMigration.1.0.0.msix"
   publishedVHDName: "WvdMigration.$(GitBuildVersionSimple).0.vhd"
   pfxName: "MsixPackage_TemporaryKey.pfx"
   vhd-size-mb: "10"
