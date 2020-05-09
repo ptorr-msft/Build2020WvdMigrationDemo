@@ -1,9 +1,3 @@
-
-jobs:
-- job: Build
-  pool:
-    vmImage: windows-2019
-
 variables:
   buildPlatform: 'x86'
   BuildConfiguration: Release
@@ -13,89 +7,92 @@ variables:
   pfxName: "MsixPackage_TemporaryKey.pfx"
   vhd-size-mb: "10"
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
-  
-  
-steps:
-- task: UseDotNet@2
-  displayName: 'Use .NET Core SDK 3.0.x'
-  inputs:
-    version: 3.0.x
 
-- task: DotNetCoreCLI@2
-  inputs:
-    command: custom
-    custom: tool
-    arguments: install --tool-path . nbgv
-  displayName: Install NBGV tool
+jobs:
+- job: Build
+  pool:
+    vmImage: windows-2019  
+ 
+  steps:
+  - task: UseDotNet@2
+    displayName: 'Use .NET Core SDK 3.0.x'
+    inputs:
+     version: 3.0.x
+     
+  - task: DotNetCoreCLI@2
+    inputs:
+     command: custom
+     custom: tool
+     arguments: install --tool-path . nbgv
+    displayName: Install NBGV tool
 
-- script: nbgv cloud -c -a
-  displayName: ngbv Set Version
+  - script: nbgv cloud -c -a
+    displayName: ngbv Set Version
 
-- powershell: |
+  - powershell: |
      # Update appxmanifest. This must be done before the build.
      [xml]$manifest = get-content "$(msixProjectPath)/Package.appxmanifest"
      $manifest.Package.Identity.Version = "$(GitBuildVersionSimple).0"
      $manifest.save("$(msixProjectPath)/Package.appxmanifest")
-  displayName: 'Update manifest version'
+    displayName: 'Update manifest version'
 
-- task: MSBuild@1
-  inputs:
-    solution: '**/*.sln'
-    platform: $(buildPlatform)
-    configuration: $(buildConfiguration)
-    msbuildArguments: '/restore /p:UapAppxPackageBuildMode=$(MsixBuildMode) /p:AppxPackageOutput=$(Build.ArtifactStagingDirectory)/$(publishedPackageName)'
-    maximumCpuCount: false
-  displayName: 'Build solution'
+  - task: MSBuild@1
+    inputs:
+     solution: '**/*.sln'
+     platform: $(buildPlatform)
+     configuration: $(buildConfiguration)
+     msbuildArguments: '/restore /p:UapAppxPackageBuildMode=$(MsixBuildMode) /p:AppxPackageOutput=$(Build.ArtifactStagingDirectory)/$(publishedPackageName)'
+     maximumCpuCount: false
+    displayName: 'Build solution'
 
-- task: DownloadSecureFile@1
-#  name : cert
-  inputs:
-    secureFile: "$(pfxName)"
-  displayName: 'Download PFX from secure storage'
-  
-- script: '"C:\Program Files (x86)\Windows Kits\10\bin\10.0.17763.0\x86\signtool"
-    sign /fd SHA256 /f $(Agent.TempDirectory)/$(pfxName) $(Build.ArtifactStagingDirectory)/$(publishedPackageName)'
-  displayName: 'Sign MSIX Package'
-  condition: succeeded()
+  - task: DownloadSecureFile@1
+   #  name : cert
+    inputs:
+     secureFile: "$(pfxName)"
+    displayName: 'Download PFX from secure storage'
 
-- script: copy $(Build.ArtifactStagingDirectory)\$(publishedPackageName) .\msixmgr\x64\$(publishedPackageName)
-  displayName: 'Setup msixmgr files'
-  condition: succeeded()
+  - script: '"C:\Program Files (x86)\Windows Kits\10\bin\10.0.17763.0\x86\signtool"
+     sign /fd SHA256 /f $(Agent.TempDirectory)/$(pfxName) $(Build.ArtifactStagingDirectory)/$(publishedPackageName)'
+    displayName: 'Sign MSIX Package'
+    condition: succeeded()
 
-#Generate MSIX app attach VHD
-- task: CmdLine@2
-  inputs:
-    script: |
-     echo.> c:\temp\command.txt create vdisk file=c:\temp\$(publishedVHDName) maximum=$(vhd-size-mb)
-     diskpart /s c:\temp\command.txt
-  displayName: Create VHD
+  - script: copy $(Build.ArtifactStagingDirectory)\$(publishedPackageName) .\msixmgr\x64\$(publishedPackageName)
+    displayName: 'Setup msixmgr files'
+    condition: succeeded()
 
-#Mount VHD, Create root directory & Expand MSIX into VHD
-- powershell: |
-    $vhdObject = Mount-DiskImage c:\temp\$(publishedVHDName) -Passthru
-     $disk = Initialize-Disk -Passthru -Number $vhdObject.Number -PartitionStyle MBR
-     $partition = New-Partition -AssignDriveLetter -UseMaximumSize -DiskNumber $disk.Number
-     Format-Volume -FileSystem NTFS -Confirm:$false -DriveLetter $partition.DriveLetter -Force
-     $vhdRoot = $partition.DriveLetter + ':\VHDRoot'
-     New-Item -Path $vhdRoot -ItemType Directory
+  - task: CmdLine@2
+    inputs:
+     script: |
+      echo.> c:\temp\command.txt create vdisk file=c:\temp\$(publishedVHDName) maximum=$(vhd-size-mb)
+      diskpart /s c:\temp\command.txt
+    displayName: Create VHD
 
-     $packagePath = ".\msixmgr\x64\$(publishedPackageName)"
-     .\msixmgr\x64\msixmgr.exe -Unpack -packagePath $packagePath -destination $vhdRoot -applyacls
-     Dismount-DiskImage c:\temp\$(publishedVHDName)
-  displayName: Expanded MSIX into VHD
+     # Mount VHD, Create root directory & Expand MSIX into VHD
+  - powershell: |
+      $vhdObject = Mount-DiskImage c:\temp\$(publishedVHDName) -Passthru
+      $disk = Initialize-Disk -Passthru -Number $vhdObject.Number -PartitionStyle MBR
+      $partition = New-Partition -AssignDriveLetter -UseMaximumSize -DiskNumber $disk.Number
+      Format-Volume -FileSystem NTFS -Confirm:$false -DriveLetter $partition.DriveLetter -Force
+      $vhdRoot = $partition.DriveLetter + ':\VHDRoot'
+      New-Item -Path $vhdRoot -ItemType Directory
 
-- script: copy c:\temp\$(publishedVHDName) $(build.artifactstagingdirectory)
-  displayName: Copy VHD to Output dir
-  condition: succeeded()
+      $packagePath = ".\msixmgr\x64\$(publishedPackageName)"
+      .\msixmgr\x64\msixmgr.exe -Unpack -packagePath $packagePath -destination $vhdRoot -applyacls
+      Dismount-DiskImage c:\temp\$(publishedVHDName)
+    displayName: Expanded MSIX into VHD
 
-- task: CopyFiles@2
-  displayName: 'Copy Files to: $(build.artifactstagingdirectory)'
-  inputs:
-    SourceFolder: '$(system.defaultworkingdirectory)'
-    Contents: '**\bin\$(BuildConfiguration)\**'
-    TargetFolder: '$(build.artifactstagingdirectory)'
+  - script: copy c:\temp\$(publishedVHDName) $(build.artifactstagingdirectory)
+    displayName: Copy VHD to Output dir
+    condition: succeeded()
 
-- task: PublishBuildArtifacts@1
-  displayName: 'Publish Artifact: drop'
-  inputs:
-    PathtoPublish: '$(build.artifactstagingdirectory)'
+  - task: CopyFiles@2
+    displayName: 'Copy Files to: $(build.artifactstagingdirectory)'
+    inputs:
+     SourceFolder: '$(system.defaultworkingdirectory)'
+     Contents: '**\bin\$(BuildConfiguration)\**'
+     TargetFolder: '$(build.artifactstagingdirectory)'
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Artifact: drop'
+    inputs:
+      PathtoPublish: '$(build.artifactstagingdirectory)'
