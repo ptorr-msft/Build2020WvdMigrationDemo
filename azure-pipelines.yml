@@ -12,7 +12,7 @@ variables:
   publishedPackageName: "WvdMigration.$(GitBuildVersionSimple).0.msix"
   publishedVHDName: "WvdMigration.$(GitBuildVersionSimple).0.vhd"
   pfxName: "MsixPackage_TemporaryKey.pfx"
-  vhd-size-mb: "10MB"
+  vhd-size-mb: "10"
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
 
   
