@@ -10,7 +10,7 @@ variables:
   buildPlatform: 'x86'
   BuildConfiguration: Release
   msixProjectPath: "./src/WvdMigration/MsixPackage"
-  publishedPackageName: "WvdMigration.(GitBuildVersionSimple).0.msix"
+  publishedPackageName: "WvdMigration.$(GitBuildVersionSimple).0.msix"
   publishedVHDName: "WvdMigration.$(GitBuildVersionSimple).0.vhd"
   pfxName: "MsixPackage_TemporaryKey.pfx"
   vhd-size-mb: "10"
