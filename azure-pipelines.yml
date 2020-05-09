@@ -24,17 +24,17 @@ jobs:
     vmImage: windows-2019  
  
   steps:
-    displayName: 'Use .NET Core SDK 3.0.x'
   - task: UseDotNet@2
     inputs:
      version: 3.0.x
+    displayName: 'Use .NET Core SDK 3.0.x'
      
   - task: DotNetCoreCLI@2
-    displayName: 'Install NBGV tool'
     inputs:
      command: custom
      custom: tool
      arguments: install --tool-path . nbgv
+    displayName: 'Install NBGV tool'
 
   - script: nbgv cloud -c -a
     displayName: ngbv Set Version
@@ -48,33 +48,33 @@ jobs:
     displayName: 'Update manifest version'
 
   - task: MSBuild@1
-    displayName: 'Build solution'
     inputs:
      solution: '**/*.sln'
      platform: $(buildPlatform)
      configuration: $(buildConfiguration)
      msbuildArguments: '/restore /p:UapAppxPackageBuildMode=$(MsixBuildMode) /p:AppxPackageOutput=$(Build.artifactStagingDirectory)/$(publishedPackageName)'
      maximumCpuCount: false
+    displayName: 'Build solution'
 
   - task: DownloadSecureFile@1
-    displayName: 'Download PFX from secure storage'
     inputs:
      secureFile: "$(pfxName)"
+    displayName: 'Download PFX from secure storage'
 
   - script: '"C:\Program Files (x86)\Windows Kits\10\bin\10.0.17763.0\x86\signtool" sign /fd SHA256 /f $(Agent.TempDirectory)/$(pfxName) $(Build.artifactStagingDirectory)/$(publishedPackageName)'
-    displayName: 'Sign MSIX Package'
     condition: succeeded()
+    displayName: 'Sign MSIX Package'
 
   - script: copy $(Build.artifactStagingDirectory)\$(publishedPackageName) $(intermediatePackagePath)
-    displayName: 'Setup MsixMgr files'
     condition: succeeded()
+    displayName: 'Setup MsixMgr files'
 
   - task: CmdLine@2
-    displayName: 'Create VHD'
     inputs:
      script: |
       echo.> c:\temp\command.txt create vdisk file=c:\temp\$(publishedVhdName) maximum=$(vhdSize)
       diskpart /s c:\temp\command.txt
+    displayName: 'Create VHD'
 
      # Mount VHD, Create root directory & Expand MSIX into VHD
   - powershell: |
@@ -90,17 +90,17 @@ jobs:
     displayName: Expanded MSIX into VHD
 
   - script: copy c:\temp\$(publishedVhdName) $(build.artifactStagingDirectory)
-    displayName: 'Copy VHD to Output dir'
     condition: succeeded()
+    displayName: 'Copy VHD to Output dir'
 
   - task: CopyFiles@2
-    displayName: 'Copy Files to: $(build.artifactStagingDirectory)'
     inputs:
      SourceFolder: '$(system.defaultWorkingDirectory)'
      Contents: '**\bin\$(buildConfiguration)\**'
      TargetFolder: '$(build.artifactStagingDirectory)'
+    displayName: 'Copy Files to: $(build.artifactStagingDirectory)'
 
   - task: PublishBuildArtifacts@1
-    displayName: 'Publish Artifact: drop'
     inputs:
       PathtoPublish: '$(build.artifactStagingDirectory)'
+    displayName: 'Publish Artifact: drop'
