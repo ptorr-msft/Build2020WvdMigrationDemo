@@ -7,7 +7,7 @@
   IgnorableNamespaces="uap rescap">
 
   <Identity
-    Name="Fabrikam.WvdMigrationApp"
+    Name="Fabrikam.WvdMigration"
     Publisher="CN=Fabrikam Inc. - FOR TEST PURPOSES ONLY"
     Version="1.1.0.0" />
 
