@@ -7,15 +7,19 @@ pr:
 - rel/*
 
 variables:
+  majorVer: '2'
+  minorVer: '0'
+  revisionVer: '0'
+  dottedVersion: '$(majorVer).$(minorVer).$(revisionVer).0'
   buildPlatform: 'x86'
   buildConfiguration: 'Release'
   msixProjectPath: "./src/WvdMigration/MsixPackage"
   packageManifestName: "$(msixProjectPath)/Package.appxmanifest"
-  publishedPackageName: "WvdMigration.$(GitBuildVersionSimple).0.msix"
-  publishedVhdName: "WvdMigration.$(GitBuildVersionSimple).0.vhd"
+  publishedPackageName: "WvdMigration.$(dottedVersion).msix"
+  publishedVhdName: "WvdMigration.$(dottedVersion).vhd"
   intermediatePackagePath: ".\\msixmgr\\x64\\$(publishedPackageName)"
   pfxName: "MsixPackage_TemporaryKey.pfx"
-  vhdSize: "10"
+  vhdSize: "6"
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
 
 jobs:
@@ -23,26 +27,26 @@ jobs:
   pool:
     vmImage: windows-2019  
  
-  steps:
-  - task: UseDotNet@2
-    inputs:
-     version: 3.0.x
-    displayName: 'Use .NET Core SDK 3.0.x'
-     
-  - task: DotNetCoreCLI@2
-    inputs:
-     command: custom
-     custom: tool
-     arguments: install --tool-path . nbgv
-    displayName: 'Install NBGV tool'
-
-  - script: nbgv cloud -c -a
-    displayName: ngbv Set Version
+#  steps:
+#  - task: UseDotNet@2
+#    inputs:
+#     version: 3.0.x
+#    displayName: 'Use .NET Core SDK 3.0.x'
+#     
+#  - task: DotNetCoreCLI@2
+#    inputs:
+#     command: custom
+#     custom: tool
+#     arguments: install --tool-path . nbgv
+#    displayName: 'Install NBGV tool'
+#
+#  - script: nbgv cloud -c -a
+#    displayName: ngbv Set Version
 
   - powershell: |
-     # Update appxmanifest. This must be done before the build.
+     # Update AppxManifest. This must be done before the build.
      [xml]$manifest = get-content "$(packageManifestName)"
-     $manifest.Package.Identity.Version = "$(GitBuildVersionSimple).0"
+     $manifest.Package.Identity.Version = "$(dottedVersion)"
      $manifest.save("$(packageManifestName)")
 
     displayName: 'Update manifest version'
