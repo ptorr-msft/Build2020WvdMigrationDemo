@@ -7,7 +7,7 @@ pr:
 - rel/*
 
 variables:
-  majorVer: '1'
+  majorVer: '2'
   minorVer: '0'
   revisionVer: '0'
   dottedVersion: '$(majorVer).$(minorVer).$(revisionVer).0'
