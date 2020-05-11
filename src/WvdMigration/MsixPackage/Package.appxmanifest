@@ -11,7 +11,7 @@
     <Identity
       Name="Fabrikam.WvdMigration"
       Publisher="CN=Fabrikam Inc. - FOR TEST PURPOSES ONLY"
-      Version="1.1.1.0" />
+      Version="7.7.8.0" />
 
     <Properties>
         <DisplayName>Fabrikam WVD Migration Sample</DisplayName>
