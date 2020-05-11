@@ -28,20 +28,6 @@ jobs:
     vmImage: windows-2019  
  
   steps:
-#  - task: UseDotNet@2
-#    inputs:
-#     version: 3.0.x
-#    displayName: 'Use .NET Core SDK 3.0.x'
-#     
-#  - task: DotNetCoreCLI@2
-#    inputs:
-#     command: custom
-#     custom: tool
-#     arguments: install --tool-path . nbgv
-#    displayName: 'Install NBGV tool'
-#
-#  - script: nbgv cloud -c -a
-#    displayName: ngbv Set Version
 
   - powershell: |
      # Update AppxManifest. This must be done before the build.
