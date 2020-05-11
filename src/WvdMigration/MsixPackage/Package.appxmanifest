@@ -4,43 +4,52 @@
   xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
   xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
   xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
-  IgnorableNamespaces="uap rescap">
+  xmlns:uap5="http://schemas.microsoft.com/appx/manifest/uap/windows10/5" 
+  xmlns:uap8="http://schemas.microsoft.com/appx/manifest/uap/windows10/8" 
+  IgnorableNamespaces="uap rescap uap5 uap8">
 
-  <Identity
-    Name="Fabrikam.WvdMigration"
-    Publisher="CN=Fabrikam Inc. - FOR TEST PURPOSES ONLY"
-    Version="1.1.0.0" />
+    <Identity
+      Name="Fabrikam.WvdMigration"
+      Publisher="CN=Fabrikam Inc. - FOR TEST PURPOSES ONLY"
+      Version="1.1.1.0" />
 
-  <Properties>
-    <DisplayName>Fabrikam WVD Migration Sample</DisplayName>
-    <PublisherDisplayName>Fabrikam Inc. (TEST ONLY)</PublisherDisplayName>
-    <Logo>Images\StoreLogo.png</Logo>
-  </Properties>
+    <Properties>
+        <DisplayName>Fabrikam WVD Migration Sample</DisplayName>
+        <PublisherDisplayName>Fabrikam Inc. (TEST ONLY)</PublisherDisplayName>
+        <Logo>Images\StoreLogo.png</Logo>
+    </Properties>
 
-  <Dependencies>
-    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.14393.0" MaxVersionTested="10.0.14393.0" />
-  </Dependencies>
+    <Dependencies>
+        <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.14393.0" MaxVersionTested="10.0.14393.0" />
+    </Dependencies>
 
-  <Resources>
-    <Resource Language="x-generate"/>
-  </Resources>
+    <Resources>
+        <Resource Language="x-generate"/>
+    </Resources>
 
-  <Applications>
-    <Application Id="App"
-      Executable="$targetnametoken$.exe"
-      EntryPoint="$targetentrypoint$">
-      <uap:VisualElements
-        DisplayName="WVD Migration Sample"
-        Description="Package for WVD Migration sample app."
-        BackgroundColor="transparent"
-        Square44x44Logo="Images\Square44x44Logo.png" Square150x150Logo="Images\Square150x150Logo.png">
-        <uap:DefaultTile  Square71x71Logo="Images\SmallTile.png"/>
-        <uap:SplashScreen Image="Images\SplashScreen.png"/>
-      </uap:VisualElements>
-    </Application>
-  </Applications>
+    <Applications>
+        <Application Id="App"
+          Executable="$targetnametoken$.exe"
+          EntryPoint="$targetentrypoint$">
+            <uap:VisualElements
+              DisplayName="WVD Migration Sample"
+              Description="Package for WVD Migration sample app."
+              BackgroundColor="transparent"
+              Square44x44Logo="Images\Square44x44Logo.png" Square150x150Logo="Images\Square150x150Logo.png">
+                <uap:DefaultTile  Square71x71Logo="Images\SmallTile.png"/>
+                <uap:SplashScreen Image="Images\SplashScreen.png"/>
+            </uap:VisualElements>
+            <Extensions>
+                <uap5:Extension Category="windows.appExecutionAlias">
+                    <uap5:AppExecutionAlias>
+                        <uap8:ExecutionAlias Alias="wvddemo.exe" uap8:AllowOverride="true"/>
+                    </uap5:AppExecutionAlias>
+                </uap5:Extension>
+            </Extensions>
+        </Application>
+    </Applications>
 
-  <Capabilities>
-    <rescap:Capability Name="runFullTrust" />
-  </Capabilities>
+    <Capabilities>
+        <rescap:Capability Name="runFullTrust" />
+    </Capabilities>
 </Package>
