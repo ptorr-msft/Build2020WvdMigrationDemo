@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 using Windows.Management.Deployment;
@@ -11,9 +12,10 @@ namespace StageAppxPackage
         {
             if (args.Length != 1)
             {
-                Console.Error.WriteLine($@"Usage: {Environment.CommandLine[0]} <path-to-package>.
-
-        Do not include the 'AppxManifest.xml' filename.");
+                Console.Error.WriteLine($@"
+Stage a package in-place for MSIX AppAttach. Usage: {Process.GetCurrentProcess().ProcessName} <path-to-package>.
+Use the path inside the VHD file, not the junction path, and do not include the 'AppxManifest.xml' filename.
+Once the package is staged, it can be registered with Add-AppxPackage in PowerShell.");
                 return 1;
             }
 
